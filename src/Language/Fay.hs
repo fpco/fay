@@ -12,7 +12,8 @@ module Language.Fay
   ,compileFromTo
   ,compileFromToAndGenerateHtml
   ,toJsName
-  ,showCompileError)
+  ,showCompileError
+  ,getRuntime)
    where
 
 import           Language.Fay.Compiler        (compileToplevelModule,
@@ -73,7 +74,7 @@ compileFile config filein = do
 
 compileFileWithState :: CompileConfig -> FilePath -> IO (Either CompileError (String,CompileState))
 compileFileWithState config filein = do
-  runtime <- getDataFileName "js/runtime.js"
+  runtime <- getRuntime
   hscode <- readFile filein
   raw <- readFile runtime
   compileToModule filein config raw compileToplevelModule hscode
@@ -97,7 +98,7 @@ compileToModule filepath config raw with hscode = do
           ["/** @constructor"
           ,"*/"
           ,"var " ++ modulename ++ " = function(){"
-          ,raw
+          ,if configExportRuntime config then raw else ""
           ,jscode
           ,"// Exports"
           ,unlines (map printExport exports)
@@ -172,3 +173,7 @@ showCompileError e =
       "searched in these places: " ++ intercalate ", " places
     UnableResolveUnqualified name -> "unable to resolve unqualified name " ++ prettyPrint name
     UnableResolveQualified qname -> "unable to resolve qualified names " ++ prettyPrint qname
+
+-- | Get the JS runtime source.
+getRuntime :: IO String
+getRuntime = getDataFileName "js/runtime.js"

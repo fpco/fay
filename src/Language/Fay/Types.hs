@@ -22,6 +22,7 @@ module Language.Fay.Types
     ,configOptimize
     ,configGClosure
     ,configExportBuiltins
+    ,configExportRuntime
     ,configPrettyPrint
     ,configHtmlWrapper
     ,configHtmlJSLibs
@@ -66,6 +67,7 @@ data CompileConfig = CompileConfig
   { configOptimize          :: Bool
   , configFlattenApps       :: Bool
   , configExportBuiltins    :: Bool
+  , configExportRuntime     :: Bool
   , _configDirectoryIncludes :: [FilePath]
   , configPrettyPrint       :: Bool
   , configHtmlWrapper       :: Bool
@@ -81,7 +83,7 @@ data CompileConfig = CompileConfig
 
 -- | Default configuration.
 instance Default CompileConfig where
-  def = CompileConfig False False True [] False False [] False True Nothing True False False Nothing
+  def = CompileConfig False False True False [] False False [] False True Nothing True False False Nothing
 
 configDirectoryIncludes :: CompileConfig -> [FilePath]
 configDirectoryIncludes cfg = _configDirectoryIncludes cfg
