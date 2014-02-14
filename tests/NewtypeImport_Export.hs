@@ -8,4 +8,4 @@ data Foo = Bar { bar :: Double }
 newtype Baz = Baz { unwrapBaz :: Foo }
 
 getBaz :: Fay Baz
-getBaz = ffi "{ instance: 'Bar', bar: 1 }"
+getBaz = ffi "{ instance: 'Baz', unwrapBaz: { instance: 'Bar', bar: 1 } }"

@@ -16,7 +16,6 @@ yInt = case int of
 
 main = do
   print x
-  print y
   print yInt
   print (Baz (Bar 1))
   baz <- getBaz

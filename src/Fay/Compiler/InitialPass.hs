@@ -14,10 +14,10 @@ import           Fay.Compiler.Misc
 import           Fay.Data.List.Extra
 import qualified Fay.Exts                        as F
 import           Fay.Exts.NoAnnotation           (unAnn)
-import qualified Fay.Exts.NoAnnotation           as N
+{-import qualified Fay.Exts.NoAnnotation           as N-}
 import           Fay.Types
 
-import           Control.Applicative
+{-import           Control.Applicative-}
 import           Control.Monad.Error
 import           Control.Monad.RWS
 import qualified Data.Map                        as M
@@ -55,51 +55,51 @@ preprocessAST () mod@(Module _ _ _ _ decls) = do
   modify $ \s -> s { stateInterfaces = M.insert (stateModuleName s) exports $ stateInterfaces s }
   forM_ decls scanTypeSigs
   forM_ decls scanRecordDecls
-  forM_ decls scanNewtypeDecls
+  -- forM_ decls scanNewtypeDecls
 preprocessAST () mod = throwError $ UnsupportedModuleSyntax "preprocessAST" mod
 
 --------------------------------------------------------------------------------
 -- | Preprocessing
 
--- | Find newtype declarations
-scanNewtypeDecls :: F.Decl -> Compile ()
-scanNewtypeDecls (DataDecl _ NewType{} _ _ constructors _) = compileNewtypeDecl constructors
-scanNewtypeDecls _ = return ()
+-- -- | Find newtype declarations
+-- scanNewtypeDecls :: F.Decl -> Compile ()
+-- scanNewtypeDecls (DataDecl _ NewType{} _ _ constructors _) = compileNewtypeDecl constructors
+-- scanNewtypeDecls _ = return ()
 
 -- | Add new types to the state
-compileNewtypeDecl :: [F.QualConDecl] -> Compile ()
-compileNewtypeDecl [QualConDecl _ _ _ condecl] = case condecl of
-    -- newtype declaration without destructor
-  ConDecl _ name  [ty]            -> addNewtype name Nothing ty
-  RecDecl _ cname [FieldDecl _ [dname] ty] -> addNewtype cname (Just dname) ty
-  x -> error $ "compileNewtypeDecl case: Should be impossible (this is a bug). Got: " ++ show x
-  where
-    getBangTy :: F.BangType -> N.Type
-    getBangTy (BangedTy _ t)   = unAnn t
-    getBangTy (UnBangedTy _ t) = unAnn t
-    getBangTy (UnpackedTy _ t) = unAnn t
+-- compileNewtypeDecl :: [F.QualConDecl] -> Compile ()
+-- compileNewtypeDecl [QualConDecl _ _ _ condecl] = case condecl of
+--     -- newtype declaration without destructor
+--   ConDecl _ name  [ty]            -> addNewtype name Nothing ty
+--   RecDecl _ cname [FieldDecl _ [dname] ty] -> addNewtype cname (Just dname) ty
+--   x -> error $ "compileNewtypeDecl case: Should be impossible (this is a bug). Got: " ++ show x
+--   where
+--     getBangTy :: F.BangType -> N.Type
+--     getBangTy (BangedTy _ t)   = unAnn t
+--     getBangTy (UnBangedTy _ t) = unAnn t
+--     getBangTy (UnpackedTy _ t) = unAnn t
 
-    addNewtype cname dname ty = do
-      qcname <- qualify cname
-      qdname <- case dname of
-                  Nothing -> return Nothing
-                  Just n  -> Just <$> qualify n
-      modify (\cs@CompileState{stateNewtypes=nts} ->
-               cs{stateNewtypes=(qcname,qdname,getBangTy ty):nts})
-compileNewtypeDecl q = error $ "compileNewtypeDecl: Should be impossible (this is a bug). Got: " ++ show q
+--     addNewtype cname dname ty = do
+--       qcname <- qualify cname
+--       qdname <- case dname of
+--                   Nothing -> return Nothing
+--                   Just n  -> Just <$> qualify n
+--       modify (\cs@CompileState{stateNewtypes=nts} ->
+--                cs{stateNewtypes=(qcname,qdname,getBangTy ty):nts})
+-- compileNewtypeDecl q = error $ "compileNewtypeDecl: Should be impossible (this is a bug). Got: " ++ show q
 
 -- | Add record declarations to the state
 scanRecordDecls :: F.Decl -> Compile ()
 scanRecordDecls decl = do
   case decl of
-    DataDecl _loc DataType{} _ctx (F.declHeadName -> name) qualcondecls _deriv -> do
+    DataDecl _loc _ _ctx (F.declHeadName -> name) qualcondecls _deriv -> do
       let ns = for qualcondecls (\(QualConDecl _loc' _tyvarbinds _ctx' condecl) -> conDeclName condecl)
       addRecordTypeState name ns
     _ -> return ()
 
   case decl of
-    DataDecl _ DataType{} _ _ constructors _ -> dataDecl constructors
-    GDataDecl _ DataType{} _ _ _ decls _ -> dataDecl (map convertGADT decls)
+    DataDecl _ _ _ _ constructors _ -> dataDecl constructors
+    GDataDecl _ _ _ _ _ decls _ -> dataDecl (map convertGADT decls)
     _ -> return ()
 
   where

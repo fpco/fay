@@ -20,18 +20,17 @@ data Foo = Bar { bar :: Double }
 newtype Baz = Baz { unwrapBaz :: Foo }
 
 getBaz :: Fay Baz
-getBaz = ffi "{ instance: 'Bar', bar: 1 }"
+getBaz = ffi "{ instance: 'Baz', unwrapBaz: { instance: 'Bar', bar: 1 } }"
 
-getBazExpr = ffi "{ instance: 'Bar', bar : 2 }" :: Fay Baz
+getBazExpr = ffi "{ instance: 'Baz', unwrapBaz: { instance: 'Bar', bar: 2 } }" :: Fay Baz
 
-getBazExpr' = f (Baz (Bar 2)) (ffi "{ instance: 'Bar', bar : 3 }" :: Baz)
+getBazExpr' = f (Baz (Bar 2)) (ffi "{ instance: 'Baz', unwrapBaz: { instance: 'Bar', bar: 3 } }" :: Baz)
 f :: Baz -> Baz -> Baz
 f (Baz x) (Baz y) = Baz (Bar (bar x + bar y))
 
 
 main = do
     print x
-    print y
     print yInt
     print (Baz (Bar 1))
 
