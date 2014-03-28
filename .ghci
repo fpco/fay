@@ -1,0 +1,3 @@
+:set -isrc
+:set -idist/build/autogen
+:set -hide-package monads-tf
